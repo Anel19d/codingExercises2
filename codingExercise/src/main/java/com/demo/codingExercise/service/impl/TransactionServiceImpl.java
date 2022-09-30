@@ -91,36 +91,6 @@ public class TransactionServiceImpl implements TransactionService {
                     amountByMonth.add(transaction.getSpendingAmount());//agrego el valor del mes en curso dic
                     currentMonth = getMonth(transaction.getTransactionDate());//dic
                 }
-
-
-//               if (currentUser == transaction.getAccountId()){
-//
-//                   if(currentMonth == 0 || currentMonth == getMonth(transaction.getTransactionDate())) {// oct
-//                       amountByMonth.add(transaction.getSpendingAmount());
-//                       currentMonth = getMonth(transaction.getTransactionDate());//oct
-//
-//                   } else {
-//                       months.put(currentMonth, getAvg(amountByMonth));
-//                       amountByMonth = new ArrayList<>();
-//                       amountByMonth.add(transaction.getSpendingAmount());//agrego el valor del mes en curso dic
-//                       currentMonth = getMonth(transaction.getTransactionDate());//dic
-//                   }
-//
-//
-//               }
-//
-//               else {
-//                    //here, add all the avg of the months by user
-//                    months.put(currentMonth, getAvg(amountByMonth));
-//                    UserMonthlyAvg userMonthlyAvg = new UserMonthlyAvg(currentUser, months);
-//                    userMonthlyAvgList.add(userMonthlyAvg);
-//                    //and change of user
-//                    currentUser = transaction.getAccountId();
-//                    currentMonth = 0;
-//                    amountByMonth = new ArrayList<>();
-//                    //months.putAll(getMonth());
-//                }
-
             }
             idx++;
         }
