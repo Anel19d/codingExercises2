@@ -58,45 +58,77 @@ public class TransactionServiceImpl implements TransactionService {
 
         //Get the first user and the first month to get a base
         int currentUser = spendingTransactionList.get(0).getAccountId();
+        Integer currentMonth = 0;
 
-
+        int idx = 1;
         for (SpendingTransaction transaction : spendingTransactionList) {
             //I validate if the date that arrives from the list is in the range of the past year
-            int currentMonth = getMonth(transaction.getTransactionDate());
-
-            if(transaction.getTransactionDate().after(pastDate)
+            if(transaction.getTransactionDate().after(pastDate) //no va a pasar hasta que encuentre una fecha con este rango
                     && transaction.getTransactionDate().before(currentDate)){
-
-                if (currentUser == transaction.getAccountId()
-                        && currentMonth == getMonth(transaction.getTransactionDate())) {
-
-                    amountByMonth.add(transaction.getSpendingAmount());
-
-                } else if (currentUser == transaction.getAccountId()
-                        && currentMonth != getMonth(transaction.getTransactionDate())) {
-
-                    if(amountByMonth.isEmpty()){
-                        amountByMonth.add(transaction.getSpendingAmount());
-                    }
-
-                    //here, add the current mont with the avg
-                    months.put(currentMonth, getAvg(amountByMonth));
-
-                    //here, initialize the variables
-                    currentMonth = getMonth(transaction.getTransactionDate());
-                    amountByMonth = new ArrayList<>();
-                    amountByMonth.add(transaction.getSpendingAmount());
-
-                } else if (currentUser != transaction.getAccountId()) {
+                if (currentUser != transaction.getAccountId()) {
                     //here, add all the avg of the months by user
+                    months.put(currentMonth, getAvg(amountByMonth));
                     UserMonthlyAvg userMonthlyAvg = new UserMonthlyAvg(currentUser, months);
                     userMonthlyAvgList.add(userMonthlyAvg);
                     //and change of user
                     currentUser = transaction.getAccountId();
+                    currentMonth = 0;
+                    amountByMonth = new ArrayList<>();
+                    months = getMonth();
                 }
+                if(currentMonth == 0 || currentMonth == getMonth(transaction.getTransactionDate())) {// oct
+                    amountByMonth.add(transaction.getSpendingAmount());
+                    currentMonth = getMonth(transaction.getTransactionDate());//oct
+                    if(idx == spendingTransactionList.size()){
+                        months.put(currentMonth, getAvg(amountByMonth));
+                        UserMonthlyAvg userMonthlyAvg = new UserMonthlyAvg(currentUser, months);
+                        userMonthlyAvgList.add(userMonthlyAvg);
+                    }
+
+                } else {
+                    months.put(currentMonth, getAvg(amountByMonth));
+                    amountByMonth = new ArrayList<>();
+                    amountByMonth.add(transaction.getSpendingAmount());//agrego el valor del mes en curso dic
+                    currentMonth = getMonth(transaction.getTransactionDate());//dic
+                }
+
+
+//               if (currentUser == transaction.getAccountId()){
+//
+//                   if(currentMonth == 0 || currentMonth == getMonth(transaction.getTransactionDate())) {// oct
+//                       amountByMonth.add(transaction.getSpendingAmount());
+//                       currentMonth = getMonth(transaction.getTransactionDate());//oct
+//
+//                   } else {
+//                       months.put(currentMonth, getAvg(amountByMonth));
+//                       amountByMonth = new ArrayList<>();
+//                       amountByMonth.add(transaction.getSpendingAmount());//agrego el valor del mes en curso dic
+//                       currentMonth = getMonth(transaction.getTransactionDate());//dic
+//                   }
+//
+//
+//               }
+//
+//               else {
+//                    //here, add all the avg of the months by user
+//                    months.put(currentMonth, getAvg(amountByMonth));
+//                    UserMonthlyAvg userMonthlyAvg = new UserMonthlyAvg(currentUser, months);
+//                    userMonthlyAvgList.add(userMonthlyAvg);
+//                    //and change of user
+//                    currentUser = transaction.getAccountId();
+//                    currentMonth = 0;
+//                    amountByMonth = new ArrayList<>();
+//                    //months.putAll(getMonth());
+//                }
+
             }
+            idx++;
         }
         return userMonthlyAvgList;
+
+    }
+
+    public void setNameForMonths(){
 
     }
 
@@ -119,24 +151,29 @@ public class TransactionServiceImpl implements TransactionService {
                 1, 2000.0));
         spendingTransactionList.add(new SpendingTransaction(3,getConvertToDate("2021-10-10"),
                 1, 500.0));
+        //spendingTransactionList.add(new SpendingTransaction(3,getConvertToDate("2021-10-11"),
+          //     1, 800.0));
         spendingTransactionList.add(new SpendingTransaction(4,getConvertToDate("2021-12-01"),
                 1, 5000.0));
-        spendingTransactionList.add(new SpendingTransaction(5,getConvertToDate("2022-03-01"),
-                1, 8000.0));
-        spendingTransactionList.add(new SpendingTransaction(5,getConvertToDate("2022-05-18"),
-                1, 9000.0));
-        spendingTransactionList.add(new SpendingTransaction(5,getConvertToDate("2022-05-18"),
-                1, 200.0));
-        spendingTransactionList.add(new SpendingTransaction(5,getConvertToDate("2022-09-27"),
-                1, 200.0));
-        spendingTransactionList.add(new SpendingTransaction(3,getConvertToDate("2022-09-16"),
+        //spendingTransactionList.add(new SpendingTransaction(5,getConvertToDate("2022-03-01"),
+          ///      1, 8000.0));
+        //spendingTransactionList.add(new SpendingTransaction(5,getConvertToDate("2022-05-18"),
+          //      1, 9000.0));
+        //spendingTransactionList.add(new SpendingTransaction(5,getConvertToDate("2022-05-18"),
+          //      1, 200.0));
+        //spendingTransactionList.add(new SpendingTransaction(5,getConvertToDate("2022-09-27"),
+          //      1, 200.0));
+       spendingTransactionList.add(new SpendingTransaction(3,getConvertToDate("2022-09-16"),
                 2, 500.0));
-        spendingTransactionList.add(new SpendingTransaction(4,getConvertToDate("2022-09-17"),
+       spendingTransactionList.add(new SpendingTransaction(4,getConvertToDate("2022-09-17"),
                 2, 300.0));
-        spendingTransactionList.add(new SpendingTransaction(5,getConvertToDate("2022-09-20"),
-                2, 200.0));
+        //spendingTransactionList.add(new SpendingTransaction(5,getConvertToDate("2022-09-20"),
+         //       2, 200.0));
         spendingTransactionList.add(new SpendingTransaction(5,getConvertToDate("2022-09-27"),
-                2, 4000.0));
+                3, 4000.0));
+
+        spendingTransactionList.add(new SpendingTransaction(4,getConvertToDate("2022-01-17"),
+                2, 80000.0));
         return spendingTransactionList;
     }
 
