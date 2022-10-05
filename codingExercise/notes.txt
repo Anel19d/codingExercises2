@@ -1,0 +1,37 @@
+Line 89-90
+Obtener el currentUser y currentMonth basandose en el
+primer item de spendingTransactionList ya que estas variables
+indicaran el usuario y el mes que se va a estar guardando
+
+Nota: spendingTransactionList esta ordenado primero por usuario
+y despues por mes.
+
+Despues se hace un loop para iterar la variable spendingTransactionList
+en el cual se condiciona a que la fecha de la transaccion este en el
+rango de fechas pastDate > transactionDate > currentDate.
+
+Si se cumple esta condicion verificamos que el usuario siga siendo
+el mismo para seguir almacenando los promedios mensuales por usuario
+en caso contrario significa que las transacciones de currentUser
+han finalizado y se debe realizar lo siguiente:
+* Se calcula el promedio del ultimo mes, indicado por currentMonth,
+  en la variable months.
+* Se almacenan los promedios guardados en months en userMonthlyAvgList
+  estos son los promedios del currentUser.
+* Hacemos reset de las variables, que indica que se tiene que
+  contabilizar los promedios de un nuevo usuario:
+    - currentUser, con el nuevo usuario de la transaccion actual.
+    - currentMonth en 0
+    - amountByMonth con un nuevo arreglo
+    - months con un nuevo arreglo de meses
+Despues van a existir 2 casos:
+* El primero indica que sigue siendo el mismo mes o que se inicializo
+  un nuevo usuario y se debe agregar el monto de la transaccion actual
+  al arreglo amountByMonth.
+  Si es la ultima transaccion significa que se tiene que calcular el
+  promedio acumulado, anadirlo a months y finalmente agregarlo a la
+  lista de usuarios.
+* El segundo caso es cuando cambia de mes, siendo asi, se debe de
+  calcular el promedio acumulado del currentMonth y se agrega a
+  months. Ademas, se guarda la primera transaccion del nuevo mes asi
+  como el nuevo mes en las correspondientes variables.

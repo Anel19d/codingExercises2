@@ -14,6 +14,56 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * Algorithm to:
+ ** Get the total annual spending transactions by user:
+ *   * First all user accounts are obtained, as well as all transactions.
+ *   * Calculate `pastDate ` which is a date from the past year based on the current date, to cover a full year.
+ *   * Gets the user data, is necessary to iterate through the entire list.
+ *   * In the list of transactions, filters by three aspects:
+ *     * By userId,
+ *       selects only the user's transactions from the list and avoids the others that do not correspond to the id.
+ *     * By `pastDate`, bring all the transactions after this date.
+ *     * By `currentDate`, bring all the transactions before this date.
+ *   * Get from the list only the amount for each transaction.
+ *   * And then, the sum of all amounts obtained in the previous step is stored in the `total` variable.
+ *   * In the end, these results are added to this list `userTotalAnnualSpendList`
+ * * This is done for each user.
+ *
+ * * Get the average monthly average in the past year:
+ *   * First all user accounts are obtained, as well as all transactions.
+ *   * Calculate `pastDate` which is a date from the past year based on the current date, to cover a full year.
+ *   * `spendingTransactionList` must be ordered by user id and then by date.
+ *   * Get the currentUser and `currentMonth` based on the first item of `spendingTransactionList` since these variables
+ *   *  Then a loop is made to iterate the variable spendingTransactionList which is conditioned to the fact that the date
+ *      of the transaction is in the date range.
+ *     * By `pastDate`, bring all the transactions after this date.
+ *     * By `currentDate`, bring all the transactions before this date.
+ *   * Case 1: If this condition is met, we verify that the user is still
+ *       the same to continue storing the monthly averages per user.
+ *   * Otherwise it means that the transactions of currentUser have finished and the following must be done:
+ *     * The average of the last month is calculated, and it is saved in our `month's map`, in which it is indicated that
+ *      the key will be the `currentMonth` and the value the result of the average.
+ *     * The averages saved in `months` are stored in `userMonthlyAvgList`
+ *       these are the averages of the currentUser.
+ *     * We reset the variables, which indicates that we have to  count the averages of a new user:
+ *       * `currentUser`, with the new user of the current transaction.
+ *       * `currentMonth` to 0
+ *       * `amountByMonth` with a new fix
+ *       * `months` with a catalog of months but with the values empty.
+ *   * Case 2: Indicates that it is still the same month or that it has been initialized a new user and the amount of
+ *     the current transaction must be added to the amountByMonth array.
+ *     *   If it is the last transaction, it means that you have to calculate the
+ *         running average, add it to `months` catalog and finally add it to the `userMonthlyAvgList`.
+ *   * Case 3: when the month changes, the cumulative average of the currentMonth must be calculated and added to the
+ *     `month`'s catalog. Also, the first transaction of the new month is saved as well as the new month
+ *      in the corresponding variables.
+ *   * For each lap, the start is being increased to know when the end is and that the average of the last
+ *   * current month can be saved this is `idx`.
+ *   * At the end just return the `userMonthlyAvgList`.
+ *
+ * */
+
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
@@ -28,7 +78,8 @@ public class TransactionServiceImpl implements TransactionService {
 
         List<UserFinancialAccount> userFinancialList = Optional.ofNullable(userFinancialAccountRepository.findAll())
                 .orElseThrow(() -> new IllegalStateException("Null exception"));
-        List<SpendingTransaction> spendingTransactionList = spendingTransactionRepository.findAll();
+        List<SpendingTransaction> spendingTransactionList = Optional.ofNullable(spendingTransactionRepository.findAll())
+                .orElseThrow(() -> new IllegalStateException("Null exception"));
         List<UserTotalAnnualSpend> userTotalAnnualSpendList = new ArrayList<>();
 
         Date pastDate = getPastYear();
@@ -54,56 +105,74 @@ public class TransactionServiceImpl implements TransactionService {
 
         List<UserMonthlyAvg> userMonthlyAvgList = new ArrayList<>();
 
+        //Gets all the users accounts
         List<UserFinancialAccount> userFinancialList = userFinancialAccountRepository.findAll();
         List<SpendingTransaction> spendingTransactionList = spendingTransactionRepository.findAll();
-                //.stream().sorted().collect(Collectors.toList());
 
+        //variable that initialize the catalog of the months
         Map<Integer, Double> months = getMonth();
 
+        //Gets the past date
         Date pastDate = getPastYear();
+        //Gets the current date
         Date currentDate = new Date();
 
-//        //sort the array for loop in order AT the date after
+        //sort the array to loop in order at the date after
         spendingTransactionList
                 .sort(Comparator.comparing(SpendingTransaction::getUserAccount)
                                 .thenComparing(SpendingTransaction::getTransactionDate));
 
         //Get the first user and the first month to get a base
         int currentUser = spendingTransactionList.get(0).getUserAccount().getId();
+        //it is initialized to 0
         int currentMonth = 0;
 
+        //it is a counter of iterations
         int idx = 1;
         for (SpendingTransaction transaction : spendingTransactionList) {
-            //I validate if the date that arrives from the list is in the range of the past year
-            if(transaction.getTransactionDate().after(pastDate) //no va a pasar hasta que encuentre una fecha con este rango
+            //Validates if the date that arrives from the list is in the range of the past year
+            if(transaction.getTransactionDate().after(pastDate) //it's not going to let it in until it finds a date with this range
                     && transaction.getTransactionDate().before(currentDate)){
                 if (currentUser != transaction.getUserAccount().getId()) {
                     //here, add all the avg of the months by user
                     months.put(currentMonth, getAvg(amountByMonth));
+                    //creates the new object with the months and their values found, and also is added the current user.
                     UserMonthlyAvg userMonthlyAvg = new UserMonthlyAvg(currentUser, months);
+                    //add to the list that are going to return all the averages by user
                     userMonthlyAvgList.add(userMonthlyAvg);
-                    //and change of user
+                    //change of user
                     currentUser = transaction.getUserAccount().getId();
+                    //set current month in 0 again
                     currentMonth = 0;
+                    //initialize the arrayList for amountByMonth
                     amountByMonth = new ArrayList<>();
+                    //Initialized the map adding all the months as keys and the value empty
                     months = getMonth();
                 }
-                if(currentMonth == 0 || currentMonth == getMonth(transaction.getTransactionDate())) {// oct
+                //case 1: indicates that it is still the same month or that it was initialized
+                // a new user and the amount of the current transaction must be added
+                if(currentMonth == 0 || currentMonth == getMonth(transaction.getTransactionDate())) {
                     amountByMonth.add(transaction.getSpendingAmount());
-                    currentMonth = getMonth(transaction.getTransactionDate());//oct
+                    currentMonth = getMonth(transaction.getTransactionDate());
+                    //but, If it is the last transaction, it means that you have to calculate the
                     if(idx == spendingTransactionList.size()){
-                        months.put(currentMonth, getAvg(amountByMonth));
+                        //add it to our map called months.
+                        months.put(currentMonth, getAvg(amountByMonth)); //avg is a method that helps to calculate de average from all the gave list
                         UserMonthlyAvg userMonthlyAvg = new UserMonthlyAvg(currentUser, months);
-                        userMonthlyAvgList.add(userMonthlyAvg);
+                        userMonthlyAvgList.add(userMonthlyAvg);//and finally, add it to the user list
                     }
 
+                    //case 2: when the month changes, being so, it must compute the running average of the current month.
                 } else {
+                    //add it to our map called months.
                     months.put(currentMonth, getAvg(amountByMonth));
+                    //initialized the arraylist
                     amountByMonth = new ArrayList<>();
-                    amountByMonth.add(transaction.getSpendingAmount());//agrego el valor del mes en curso dic
-                    currentMonth = getMonth(transaction.getTransactionDate());//dic
+                    amountByMonth.add(transaction.getSpendingAmount());//adds the value of the current month
+                    currentMonth = getMonth(transaction.getTransactionDate());//set the variable as the current month
                 }
             }
+            //increments the index
             idx++;
         }
         return userMonthlyAvgList;
@@ -113,13 +182,7 @@ public class TransactionServiceImpl implements TransactionService {
     public void setNameForMonths() {
     }
 
-//    private Date getConvertToDate(String strDate) throws ParseException {
-//        Date date = new SimpleDateFormat("yyyy-MM-dd")
-//                .parse(strDate);
-//
-//        return date;
-//    }
-
+    /**Allows to bring one date according other date*/
     private  Date getPastYear(){
 
         Date currentDate = new Date();
@@ -136,21 +199,27 @@ public class TransactionServiceImpl implements TransactionService {
         return calendar.getTime();
     }
 
+    /**Allows to calculate the average from one list*/
     private static Double getAvg(List<Double> transactionAmounts){
         return transactionAmounts.stream()
                 .mapToDouble(Double::doubleValue)
                 .average().getAsDouble();
     }
 
+    /**Helps to get only the month from one date*/
     private static Integer getMonth(Date date){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         return calendar.get(Calendar.MONTH) + 1;
     }
 
+    /**This is a dictionary that store all the months since Jan to dec, the
+     * month is represented by one number, ex. 1 = Jan, 2= feb...
+     * The value will be the average.
+     * */
     private  Map<Integer, Double> getMonth(){
         Map<Integer, Double> months = new HashMap<>();
-        //  Month   Avg
+        //       Month   Avg
         months.put(1, 0.0);
         months.put(2, 0.0);
         months.put(3, 0.0);
