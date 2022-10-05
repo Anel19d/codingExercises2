@@ -76,22 +76,30 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public List<UserTotalAnnualSpend> getUsersTotalAnnualSpending() throws ParseException {
 
+        //Gets all the users accounts
+        //Is used Optional to validate that the value that returns are not null
         List<UserFinancialAccount> userFinancialList = Optional.ofNullable(userFinancialAccountRepository.findAll())
                 .orElseThrow(() -> new IllegalStateException("Null exception"));
+        //Gets all the transactions
+        //Is used Optional to validate that the value that returns are not null
         List<SpendingTransaction> spendingTransactionList = Optional.ofNullable(spendingTransactionRepository.findAll())
                 .orElseThrow(() -> new IllegalStateException("Null exception"));
+
+        //List to store all the total results by user
         List<UserTotalAnnualSpend> userTotalAnnualSpendList = new ArrayList<>();
 
+        //Gets the past date
         Date pastDate = getPastYear();
+        //Gets the current date
         Date currentDate = new Date();
 
         for (UserFinancialAccount user : userFinancialList) {
-            Double total = spendingTransactionList.stream()
-                    .filter(t ->  t.getUserAccount().getId().equals(user.getId()) &&
-                            t.getTransactionDate().after(pastDate) &&
+            Double total = spendingTransactionList.stream()//used stream to iterate and do operations at the same time
+                    .filter(t ->  t.getUserAccount().getId().equals(user.getId()) && //first filter by the current user id
+                            t.getTransactionDate().after(pastDate) && // then filter for a range of dates
                             t.getTransactionDate().before(currentDate))
-                    .map(SpendingTransaction::getSpendingAmount)
-                    .mapToDouble(Double::doubleValue).sum();
+                    .map(SpendingTransaction::getSpendingAmount)//bring only the amounts from the list
+                    .mapToDouble(Double::doubleValue).sum();//convert to double object and does the sum.
 
             userTotalAnnualSpendList.add(new UserTotalAnnualSpend(user.getId(), total));
         }
@@ -101,13 +109,20 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public List<UserMonthlyAvg> getUserMonthlyAverage() throws ParseException {
+        //This list is for store al the amounts per month
         List<Double> amountByMonth = new ArrayList<>();
 
+        //This list will help to store the monthly average by user.
         List<UserMonthlyAvg> userMonthlyAvgList = new ArrayList<>();
 
         //Gets all the users accounts
-        List<UserFinancialAccount> userFinancialList = userFinancialAccountRepository.findAll();
-        List<SpendingTransaction> spendingTransactionList = spendingTransactionRepository.findAll();
+        //Is used Optional to validate that the value that returns are not null
+        List<UserFinancialAccount> userFinancialList = Optional.ofNullable(userFinancialAccountRepository.findAll())
+                .orElseThrow(() -> new IllegalStateException("Null exception"));
+        //Gets all the transactions
+        //Is used Optional to validate that the value that returns are not null
+        List<SpendingTransaction> spendingTransactionList = Optional.ofNullable(spendingTransactionRepository.findAll())
+                .orElseThrow(() -> new IllegalStateException("Null exception"));
 
         //variable that initialize the catalog of the months
         Map<Integer, Double> months = getMonth();
@@ -118,8 +133,8 @@ public class TransactionServiceImpl implements TransactionService {
         Date currentDate = new Date();
 
         //sort the array to loop in order at the date after
-        spendingTransactionList
-                .sort(Comparator.comparing(SpendingTransaction::getUserAccount)
+        spendingTransactionList// is used the method sort and the interface of comparator
+                .sort(Comparator.comparing(SpendingTransaction::getUserAccount)//then is comparing by the date
                                 .thenComparing(SpendingTransaction::getTransactionDate));
 
         //Get the first user and the first month to get a base
