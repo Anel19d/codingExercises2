@@ -14,11 +14,20 @@ create table spending_transaction(
       REFERENCES user_financial_account(id)
 );
 
---insert into user_financial_account (name, open_date) values ('Alfonso Herrera','2019-12-14');
+insert into user_financial_account (name, open_date) values ('Alfonso Herrera','2019-12-14');
 --insert into user_financial_account (name, open_date) values ('Pedro Gonzalez','2020-08-20');
 --insert into user_financial_account (name, open_date) values ('Maria Vazquez','2022-09-15');
 --
 --
+insert into spending_transaction (transaction_date, account_id, spending_amount) values
+('2021-08-23', 1, 1000.0);
+insert into spending_transaction (transaction_date, account_id, spending_amount) values
+('2021-09-11', 1, 2000.0);
+insert into spending_transaction (transaction_date, account_id, spending_amount) values
+('2021-10-10', 1, 500.0);
+insert into spending_transaction (transaction_date, account_id, spending_amount) values
+('2021-10-11', 1, 800.0);
+
 --insert into spending_transaction (transaction_date, account_id, spending_amount) values
 --('2021-08-23', 1, 1000.0);
 --insert into spending_transaction (transaction_date, account_id, spending_amount) values

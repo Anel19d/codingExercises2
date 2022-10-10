@@ -1,6 +1,6 @@
-## User Transactions
+## User Transactions🧮
 
-### Introduction
+### Introduction 📝
 
 Good practice in financial planning is to review expenses in the previous year and adjust expenses for the next year.
 One part of looking back is to calculate the annual spending and the monthly average in the past year.
@@ -10,7 +10,7 @@ The annual expense and the monthly average can be used as a basis for a financia
 
 The next instructions will allow you to know the working of the project on your local machine for development and testing purposes.
 
-### Pre-requirements 📋
+### Pre-requirements 📖
 
 _Things you need to download the project_
 
@@ -19,7 +19,7 @@ _Things you need to download the project_
 * IntelliJ or any other development IDE for java that supports maven and Spring Boot.
 * Postman
 
-### Running the endpoints ⚙️
+### Running the endpoints 📮
 
 ###### Endpoints to use
 
@@ -34,7 +34,7 @@ _Things you need to download the project_
        1. `key: Integer` - month of the year represented by one number. Ex. *1 = Jan*, *2= Feb*...
        2. `value: Double`- the monthly average.
 
-###### Presentation layer
+#### Presentation layer 🖨️
 
 This endpoint returns an array of objects, the array contains the user id and the total sum of all transactions for a year.
 
@@ -50,7 +50,7 @@ This is an example of the returning array in Postman.
 
 Any service uses any kind of authentication, at the moment.
 
-###### Bussines Layer
+#### Bussines Layer ✒️
 
 The service layer is based on the following requirements:
 
@@ -114,7 +114,7 @@ The implementation logic works in a next way:
   * current month can be saved this is `idx`.
   * At the end just return the `userMonthlyAvgList`.
 
-###### Persistence layer
+#### Persistence layer 🔁
 
 JPA and Hibernate are being used to map the Java classes to database tables and data persistence.
 To use both is necessary to add the next dependency at the POM.xml.
@@ -127,7 +127,7 @@ There are only two entities, which are:
 * S*pending Transaction Repository*
 * *User Financial Account Repository*
 
-###### Database layer
+#### Database layer 💾
 
 For database is using h2, which is a memory database, which means that is available
 while the spring boot application is up.
@@ -143,7 +143,13 @@ The interface of the database is the next:
 And this is the entity relationship diagram, to give us an idea of how the tables are related:
 ![img_2.png](img_2.png)
 
-## Deployment 📦
+## Deployment 💻
+
+This application actually only runs on a local machine.
+
+For run could use the following command from *MAVEN*:
+
+`mvn spring-boot:run`
 
 ## Build with 🛠️
 
